@@ -1,0 +1,29 @@
+{
+  "name": "scaleify",
+  "version": "1.0.0",
+  "description": "An AI assistant that businesses set up on their phones to answer questions for customers",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run start:client\" \"npm run start:server\"",
+    "start:client": "cd client && npm run dev",
+    "start:server": "cd server && npm run start:server:run",
+    "build": "concurrently \"npm run build:client\" \"npm run build:server\"",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maboelsoud/scaleify.git"
+  },
+  "dependencies": {
+    "concurrently": "^8.0.5"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maboelsoud/scaleify/issues"
+  },
+  "homepage": "https://github.com/maboelsoud/scaleify#readme"
+}
