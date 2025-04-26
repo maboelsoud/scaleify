@@ -65,6 +65,10 @@ npm install
 cd ../frontend
 npm install
 
+# to run in dev
+npm run dev
+# it should concurrently run the backend and frontend for you
+
 # Start Firebase emulators (for Firestore/Auth)
 firebase emulators:start
 ```
