@@ -1,11 +1,18 @@
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
+import { Link, Route, Routes } from 'react-router-dom'
 
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import Appointments from './pages/Appointments'
+import Calls from './pages/Calls'
+import Customers from './pages/Customers'
+import Dashboard from './pages/Dashboard'
+import Orders from './pages/Orders'
+import Simulation from './pages/Simulation'
 
-function App() {
+function Demo() {
   const [count, setCount] = useState(0)
 
   return (
@@ -44,6 +51,72 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
     </>
+  )
+}
+
+function Home() {
+  return (
+    <div>
+      <h1>This is the home page</h1>
+      <Link to="about">Click to view our about page</Link>
+      <Link to="contact">Click to view our contact page</Link>
+      <div className="flex flex-col items-center justify-center">
+        <Button asChild>
+          <Link to="appointments">appointments</Link>
+        </Button>
+        <Button asChild>
+          <Link to="calls">calls</Link>
+        </Button>
+        <Button asChild>
+          <Link to="customers">customers</Link>
+        </Button>
+        <Button asChild>
+          <Link to="dashboard">dashboard</Link>
+        </Button>
+        <Button asChild>
+          <Link to="orders">orders</Link>
+        </Button>
+        <Button asChild>
+          <Link to="simulation">simulation</Link>
+        </Button>
+      </div>
+      <Demo />
+    </div>
+  );
+}
+
+function About() {
+    return (
+        <div>
+            <h1>This is the about page</h1>
+        </div>
+    )
+}
+
+function Contact() {
+    return (
+        <div>
+            <h1>This is the contact page</h1>
+        </div>
+    )
+}
+
+function App() {
+
+  return (
+    <div className="App">
+      <Routes>
+        <Route path="/" element={ <Home/> } />
+        <Route path="about" element={ <About/> } />
+        <Route path="contact" element={ <Contact/> } />
+        <Route path="appointments" element={ <Appointments/> } />
+        <Route path="calls" element={ <Calls/> } />
+        <Route path="customers" element={ <Customers/> } />
+        <Route path="dashboard" element={ <Dashboard/> } />
+        <Route path="orders" element={ <Orders/> } />
+        <Route path="simulation" element={ <Simulation/> } />
+      </Routes>
+    </div>
   )
 }
 
