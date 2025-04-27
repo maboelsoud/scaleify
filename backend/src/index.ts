@@ -1,7 +1,9 @@
 import express, {Request, Response} from "express";
 import { config } from "dotenv";
+config(); // importing early so that other libraries can use env vars
+import { db, app as firebaseApp, auth } from "./services/firebaseService";
+console.log("🚀 ~ firebaseApp:", firebaseApp !== null);
 
-config();
 const app = express();
 const port = process.env.PORT || 3001;
 
