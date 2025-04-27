@@ -18,7 +18,8 @@
   "description": "",
   "dependencies": {
     "dotenv": "^16.5.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "firebase-admin": "^13.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
