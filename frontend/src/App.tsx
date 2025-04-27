@@ -11,6 +11,7 @@ import Customers from './pages/Customers'
 import Dashboard from './pages/Dashboard'
 import Orders from './pages/Orders'
 import Simulation from './pages/Simulation'
+import { app } from './lib/firebase'
 
 function Demo() {
   const [count, setCount] = useState(0)
