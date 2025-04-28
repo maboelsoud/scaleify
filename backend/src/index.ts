@@ -2,6 +2,7 @@ import express, {Request, Response} from "express";
 import { config } from "dotenv";
 config(); // importing early so that other libraries can use env vars
 import { db, app as firebaseApp, auth } from "./services/firebaseService";
+import connectNgrok from "./utils/ngrok";
 console.log("🚀 ~ firebaseApp:", firebaseApp !== null);
 
 const app = express();
@@ -17,4 +18,5 @@ app.get('/health', (req:Request, resp: Response)=> {
 
 app.listen(port, () => {
   console.log(`app listening on port ${port}`);
+  connectNgrok(parseInt(port+"", 10));
 });
