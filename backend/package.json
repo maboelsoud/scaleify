@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "tunnel": "npx tsnd --respawn src/utils/ngrok.ts",
     "start:emulators": "firebase emulators:start",
     "dev": "npx tsnd --respawn src",
     "build": "tsc",
