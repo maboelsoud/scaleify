@@ -1,6 +1,8 @@
 import { Request, Response, Router } from "express";
 // import { getActiveConvo } from "../services/twilioService";
 import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
+import { dispatch } from "../fsm/dispatcher";
+import { createStore } from "../fsm/store";
 
 
 
@@ -91,6 +93,39 @@ router.post('/respond', (req: Request, resp: Response)=> {
       }
     }
 
+});
+
+router.post('/start-beta', async (req: Request, res: Response)=> {
+  
+  const store = createStore(req.body);
+  console.log("🚀 ~ router.post ~ store:", store)
+  await dispatch(store, {type: "RESPONDED"}, (b, e)=> {
+
+    if (e.type === "SENDING_RESPONSE" && e.payload) {
+      console.log("🚀 ~ awaitdispatch ~ e.payload:", e.payload)
+      const { message , expectReply = false } = e.payload;
+
+      const twimlResp = new VoiceResponse();
+      if (expectReply) {
+        const gather = twimlResp.gather({
+          input: ["speech"],
+          action: '/twilio/respond',
+          method: "POST",
+          timeout: 5,
+        });
+        if (message) {
+          gather.say(message);
+        }
+      } else {
+        if (message) {
+          twimlResp.say(message);
+        }
+      }
+
+      res.type('text/xml').send(twimlResp.toString());
+  
+    }
+  });
 });
 
 
