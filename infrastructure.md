@@ -1,18 +1,22 @@
 scaleify/
 ├── backend/ (Node.js + Express)
-│   ├── index.js
+│   ├── index.ts
 │   ├── routes/
-│   │   └── twilio.js
+│   │   └── twilio.ts
 │   ├── services/
-│   │   ├── stt.js
-│   │   ├── tts.js
-│   │   ├── llm.js             # Abstract LLM logic here (Gemini, GPT, etc)
-│   │   ├── firestore.js
-│   │   └── auth.js            # Firebase or alternate provider logic
+│   │   ├── stt.ts
+│   │   ├── tts.ts
+│   │   ├── llm.ts             # Abstract LLM logic here (Gemini, GPT, etc)
+│   │   ├── firestore.ts
+│   │   └── auth.ts            # Firebase or alternate provider logic
 │   ├── tools/
-│   │   └── bookAppointment.js
+│   │   └── bookAppointment.ts
+│   ├── fsm/
+│   │   ├── effects.ts
+│   │   ├── store.ts
+│   │   └── dispatcher.ts
 │   ├── utils/
-│   └── firebase.config.js
+│   └── firebase.config.ts
 │
 ├── frontend/ (React + Vite)
 │   ├── src/

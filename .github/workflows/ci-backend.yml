@@ -1,0 +1,69 @@
+name: CI - Backend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/src/**'
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
+defaults:
+  run:
+    working-directory: ./backend
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '23'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+      - name: 🧪 Run Tests
+        run: npm test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '23'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+      - name: 🧹 Run ESLint
+        run: npm run lint
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '23'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+      - name: 🧼 Run Prettier (check mode)
+        run: npm run format:check
