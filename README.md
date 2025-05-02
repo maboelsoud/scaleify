@@ -1,4 +1,5 @@
 # 📞 Scaleify – AI Voice Assistant for Local Businesses
+![CI](https://github.com/maboelsoud/scaleify/actions/workflows/ci.yml/badge.svg)
 
 **Scaleify** is a drop-in AI phone assistant for clinics, restaurants, and other local businesses. When the front desk doesn’t pick up, Scaleify answers calls, provides information, takes appointments or orders, and logs everything in a dashboard.
 
