@@ -1,4 +1,4 @@
-name: CI - Lint, Format, and Test
+name: CI - Backend
 
 on:
   push:
@@ -11,6 +11,10 @@ permissions:
   checks: write
   contents: read
   pull-requests: write
+
+defaults:
+  run:
+    working-directory: ./backend
 
 jobs:
   test:
