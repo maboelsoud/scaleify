@@ -6,7 +6,7 @@ import twilio from 'twilio'
 import twiliorouterRoutes from "./routes/twilioRoutes";
 console.log("🚀 ~ firebaseApp:", firebaseApp !== null);
 
-const app = express();
+export const app = express();
 const port = process.env.PORT || 3001;
 
 // Parse incoming POST params with Express middleware

@@ -7,7 +7,9 @@ export type EventType =
   | { type: "SENDING_RESPONSE"; payload: { message: string; expectReply: boolean } }
   | { type: "ERROR_LLM"; payload: { error: string } };
 
-export async function dispatch(store: StoreType, event: EventType, emit?: (b: StoreType , e: EventType)=> void  ) {
+export type EmitFn = (b: StoreType , e: EventType)=> void;
+
+export async function dispatch(store: StoreType, event: EventType, emit?: EmitFn ) {
 
     const handler = Effects[event.type];
     const { updatedStore, nextEvent } = handler(store, event);
@@ -16,4 +18,5 @@ export async function dispatch(store: StoreType, event: EventType, emit?: (b: St
     if (nextEvent) {
         return dispatch(updatedStore, nextEvent, emit);
     }
+    return updatedStore;
 }
