@@ -45,13 +45,14 @@ export interface TwilioVoiceWebhookParams {
 }
 
 
-interface singleTalk {
+export interface singleTalk {
+  customerToMachine?: string;
   machineToCustomer?: string;
   machineToSystem?: string;
-  system?: string;
+  systemToMachine?: string;
 };
 
-type ConvoHistory = singleTalk[];
+export type ConvoHistory = singleTalk[];
 
 export type StoreState = 
 | `CREATED`               // Conversation created from `/start`
@@ -77,25 +78,31 @@ export type StoreState =
 | `ERROR_LLM`             // LLM request failed
 | `ESCALATE_TO_HUMAN`     // Transition call to human, or send apology message
 
-export interface BaseStore {
-  state: Extract<StoreState, "CREATED" | "ENDED" | "ERROR" >;
+export interface FullStore {
+  state: StoreState;
   lastUpdated: Date;
   twilioParams: TwilioVoiceWebhookParams;
-
-}
-
-export interface FullStore extends BaseStore {
   customerId: string;
   messages: ConvoHistory;
 }
 
-export type StoreType = BaseStore | FullStore;
 
-export function createStore(reqBody: object): BaseStore {
+export function createStore(reqBody: object): FullStore {
   return {
     twilioParams: reqBody as unknown as TwilioVoiceWebhookParams,
     state:  "CREATED",
     lastUpdated: new Date(),
+    // customerId: "unknown",
+    customerId: ( reqBody as unknown as TwilioVoiceWebhookParams )?.CallSid,
+    messages: [],
   };
 }
 
+
+export function updateStoreState(store: FullStore, newState: StoreState): FullStore {
+  return {
+    ...store,
+    state: newState,
+    lastUpdated: new Date(),
+  };
+}
