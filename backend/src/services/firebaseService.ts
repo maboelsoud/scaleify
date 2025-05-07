@@ -12,7 +12,7 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 
 console.log("🚀 ~ process.env.NODE_ENVprocess.env.NODE_ENV::", process.env.NODE_ENV);
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test") {
   console.log("Connecting firebase-admin to Firestore Emulator...");
   db.settings({
     host: "localhost:8080",
