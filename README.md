@@ -69,8 +69,36 @@ npm install
 # to run in dev
 npm run dev
 # it should concurrently run the backend and frontend and the emulator for you
-`
+```
 
+🔍 Testing the Call Flow
+
+1. View the FSM state machine
+
+The FSM that controls the AI voice assistant is visualized here:
+
+
+
+It shows how a phone call progresses from the CREATED state through different stages like greeting, listening, LLM processing, executing commands, and escalation.
+
+2. Run tests
+
+From the backend folder:
+```
+cd backend
+npm run test
+```
+This runs the unit and integration tests for the FSM and Firebase interactions.
+
+3. In a different terminal, use Twilio + ngrok to simulate real calls
+```
+cd backend
+npm run tunnel
+```
+This will start an ngrok tunnel and print a public URL. This means that calls the URL will correspond calls on your localhost.
+After running the project locally, use this URL to configure your Twilio phone number webhook (for /twilio/start and /twilio/respond).
+
+Now you can call your Twilio number and interact with the AI assistant in real time.
 
 ## 🧪 Dev Simulation
 Use the “Simulation” tab in the frontend to test your AI voice assistant:

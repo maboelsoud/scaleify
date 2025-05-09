@@ -1,26 +1,23 @@
 jest.mock("../../services/firebaseHelpers", () => ({
   fetchStoreFromFirebase: jest.fn(),
-  saveStoreToFirebase: jest.fn(),
+  saveStoreToFirebase: jest.fn((x)=> x),
   getResponseFromLLM: jest.fn(),
 }));
 
 import { dispatch, EventType } from "../dispatcher";
-import { createStore, FullStore, TwilioVoiceWebhookParams } from "../store";
-import { fetchStoreFromFirebase, saveStoreToFirebase, getResponseFromLLM } from "../../services/firebaseHelpers";
+import { createStore, FullStore, TwilioVoiceWebhookParams } from "../../models/store";
+import { fetchStoreFromFirebase, getResponseFromLLM } from "../../services/firebaseHelpers";
+import { createTwilioParams } from "../../test/createTwilioParams";
 
 describe('FSM - Integration', () => {
   test('FSM: Created flow to greeting', async ()=> {
 
-    const mockStore = createStore({CallSid: "TestCallSid"});
-    (saveStoreToFirebase as jest.Mock).mockResolvedValue(mockStore);
+    const twilioParams = createTwilioParams("TestCallSid");
 
     const seenEvents: EventType[] = [];
     const seenStore: (FullStore | undefined)[] = [];
-    const finalStore = await dispatch({event: {type: "CREATED", payload: {
-      twilioParams: {
-        CallSid: "TestCallSid",
-      } as TwilioVoiceWebhookParams
-    }}, emit: (event, store)=> {
+    const finalStore = await dispatch({event: {type: "CREATED", payload: {twilioParams}},
+      emit: (event, store)=> {
       seenEvents.push(event);
       seenStore.push(store);
     }});
@@ -38,25 +35,22 @@ describe('FSM - Integration', () => {
     if (!finalStore) {
       throw new Error("Final store is undefined");
     }
-    expect(finalStore).toEqual({
-      customerId: "TestCallSid",
-      state: "WAITING_FOR_USER",
-      twilioParams: {"CallSid": "TestCallSid"},
-      lastUpdated: finalStore.lastUpdated,
-      messages: [
-        {
-          machineToCustomer: "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?",
-        }
-      ]
-      
-    });
+    const mockStore = createStore(twilioParams);
+    mockStore.state = "WAITING_FOR_USER";
+    mockStore.messages = [{
+        machineToCustomer: "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?",
+    }];
+    mockStore.lastUpdated = finalStore.lastUpdated;
+    
+    expect(finalStore).toEqual(mockStore);
   });
 
   test('FSM: Responded flow to response', async ()=> {
 
     // const initialStore = createStore({CallSid: "Test"});
 
-    const mockStore = createStore({CallSid: "TestCallSid"});
+    const twilioParams = createTwilioParams("TestCallSid");
+    const mockStore = createStore(twilioParams);
     (fetchStoreFromFirebase as jest.Mock).mockResolvedValue(mockStore);
 
     (getResponseFromLLM as jest.Mock).mockResolvedValue({
@@ -94,9 +88,9 @@ describe('FSM - Integration', () => {
     }
     // console.log("🚀 ~ fsm.integration.test.ts:52 ~ test ~ finalStore:", finalStore);
     expect(finalStore).toEqual({
-      customerId: "TestCallSid",
+      CallSid: "TestCallSid",
       state: "WAITING_FOR_USER",
-      twilioParams: {"CallSid": "TestCallSid"},
+      twilioParams: twilioParams,
       lastUpdated: finalStore.lastUpdated,
       messages: [
         {

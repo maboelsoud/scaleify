@@ -79,21 +79,26 @@ export type StoreState =
 | `ESCALATE_TO_HUMAN`     // Transition call to human, or send apology message
 
 export interface FullStore {
+  CallSid: string; // primary key
   state: StoreState;
-  lastUpdated: Date;
+  lastUpdated: string;
   twilioParams: TwilioVoiceWebhookParams;
-  customerId: string;
+  // customerId: string;
   messages: ConvoHistory;
 }
 
 
-export function createStore(reqBody: object): FullStore {
+// export function createStore(reqBody: {CallSid: string}): FullStore {
+export function createStore(reqBody: TwilioVoiceWebhookParams): FullStore {
   return {
-    twilioParams: reqBody as unknown as TwilioVoiceWebhookParams,
+    CallSid: reqBody.CallSid,
+    // twilioParams: reqBody as unknown as TwilioVoiceWebhookParams,
+    // adding the dots so that if the arg gets modified it doesnt carry over here
+    twilioParams: {...reqBody},
     state:  "CREATED",
-    lastUpdated: new Date(),
+    lastUpdated: new Date().toISOString(),
     // customerId: "unknown",
-    customerId: ( reqBody as unknown as TwilioVoiceWebhookParams )?.CallSid,
+    // customerId: ( reqBody as unknown as TwilioVoiceWebhookParams )?.CallSid,
     messages: [],
   };
 }
@@ -103,6 +108,6 @@ export function updateStoreState(store: FullStore, newState: StoreState): FullSt
   return {
     ...store,
     state: newState,
-    lastUpdated: new Date(),
+    lastUpdated: new Date().toISOString(),
   };
 }

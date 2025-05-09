@@ -1,5 +1,5 @@
 import { Effects, storeFullHandler, StorefulStates, storelessHandler, StorelessStates } from "./effects";
-import { FullStore, TwilioVoiceWebhookParams } from "./store";
+import { FullStore, TwilioVoiceWebhookParams } from "../models/store";
 
 export type EventType = 
 | {type: `CREATED`, payload: { twilioParams: TwilioVoiceWebhookParams; }}

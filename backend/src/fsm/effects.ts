@@ -1,6 +1,6 @@
 import { saveStoreToFirebase, fetchStoreFromFirebase, getResponseFromLLM, executeCommand, fetchBusinessInfoFromFirebase, fetchOperatorFromFirebase } from "../services/firebaseHelpers";
 import { EventType } from "./dispatcher";
-import { StoreState, FullStore, createStore, singleTalk, updateStoreState } from "./store";
+import { StoreState, FullStore, createStore, singleTalk, updateStoreState } from "../models/store";
 
 // fake functions to simulate the behavior until we have the real ones
 
@@ -42,11 +42,12 @@ const ProcessingGreetingHandler: storeFullHandler<"PROCESSING_GREETING"> = async
     nextEvent: { type: "APPEND_MESSAGE_CONVO", payload: { expectReply: true, message: greeting }}}
 };
 
-const WaitingForUserHandler: storeFullHandler<"WAITING_FOR_USER"> = async (b, e)=>{ 
+const WaitingForUserHandler: storeFullHandler<"WAITING_FOR_USER"> = async (store)=>{
   // console.log('in WAITING_FOR_USER, b', b, 'e', e);
   // we dont do anything because we are waiting for the user to say something
   // no need to update the store because we are not updating the state
-  return { updatedStore: b};
+  const finalStore = await saveStoreToFirebase(store);
+  return { updatedStore: finalStore};
 };
 const NoCustomerInputHandler: storeFullHandler<"NO_CUSTOMER_INPUT"> = async (store)=>{
   const lastMessage = store.messages[store.messages.length - 1];
@@ -78,7 +79,7 @@ const ProcessingLlmHandler: storeFullHandler<"PROCESSING_LLM"> = async (store, e
     ...store,
     messages: [...store.messages, newMessage
     ],
-    lastUpdated: new Date(),
+    lastUpdated: new Date().toISOString(),
   };
 
   const result = await getResponseFromLLM(newStore.messages)
@@ -129,13 +130,14 @@ const LlmFetchResponseHandler: storeFullHandler<"LLM_FETCH_RESPONSE"> = async (b
   throw "not supposed to be implemented";
   return { updatedStore: b, nextEvent: e};
 };
-const FetchingInfoHandler: storeFullHandler<"FETCHING_INFO"> = async (b, e)=>{
-  const result = await fetchBusinessInfoFromFirebase(e.payload.message);
-  if (!result || !result.success) {
-    return { updatedStore: updateStoreState(b, "ERROR_LLM"),
-      nextEvent: {type: "ERROR_LLM", payload: { error: result? `result not successful, error: ${result.error}` : "missing business info"}}};
+const FetchingInfoHandler: storeFullHandler<"FETCHING_INFO"> = async (store, event)=>{
+  const result = await fetchBusinessInfoFromFirebase(store.twilioParams.To, event.payload.message);
+  if (!result) {
+    return { updatedStore: updateStoreState(store, "ERROR_LLM"),
+      nextEvent: {type: "ERROR_LLM", payload: { error: "missing business info"}}};
   }
-  return { updatedStore: updateStoreState(b, "PROCESSING_LLM"), nextEvent: {type: "PROCESSING_LLM", payload: { who: "system", message: result.text}}};
+  return { updatedStore: updateStoreState(store, "PROCESSING_LLM"),
+    nextEvent: {type: "PROCESSING_LLM", payload: { who: "system", message: result}}};
 };
 const FetchSuccessHandler: storeFullHandler<"FETCH_SUCCESS"> = async (b, e)=>{
   throw "not supposed to be implemented";
@@ -160,7 +162,7 @@ const AppendMessageConvoHandler: storeFullHandler<"APPEND_MESSAGE_CONVO"> = asyn
     updatedStore = {
       ...store,
       messages: [...store.messages, newMessage],
-      lastUpdated: new Date(),
+      lastUpdated: new Date().toISOString(),
     };
 
   } else {
@@ -173,23 +175,26 @@ const AppendMessageConvoHandler: storeFullHandler<"APPEND_MESSAGE_CONVO"> = asyn
     updatedStore = {
       ...store,
       messages: [...store.messages.slice(0, -1), newLastMessage],
-      lastUpdated: new Date(),
+      lastUpdated: new Date().toISOString(),
     };
   }
   return { updatedStore: updateStoreState(updatedStore, "SENDING_RESPONSE"),
     nextEvent: {type: "SENDING_RESPONSE", payload: {expectReply, message: appendedMessage}}};
 };
 const SendingResponseHandler: storeFullHandler<"SENDING_RESPONSE"> = async (b, e)=>{
+  // this is typically the event where there is a listener function that sends a response to twilio
   if (!e.payload.expectReply) {
     return ({ updatedStore: updateStoreState(b, "ENDED"), nextEvent: {type: "ENDED"}}) 
   };
   return ({ updatedStore: updateStoreState(b, "WAITING_FOR_USER"), nextEvent: {type: "WAITING_FOR_USER"}});
 };
-const EndedHandler: storeFullHandler<"ENDED">  = async (b)=>{
+const EndedHandler: storeFullHandler<"ENDED">  = async (store)=>{
   
   // we dont do anything because its the end of the convo
   // todo: update the store to the backend
-  return { updatedStore: updateStoreState(b, "ENDED") };
+  // TODO: i dont think we need to update the store state again here
+  const finalStore = await saveStoreToFirebase(updateStoreState(store, "ENDED"));
+  return { updatedStore: finalStore };
 };
 const ErrorNoConvoHandler: storelessHandler<"ERROR_NO_CONVO"> = async (e)=>{
   // log error to backend
