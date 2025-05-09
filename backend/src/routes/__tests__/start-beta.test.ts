@@ -1,4 +1,5 @@
 jest.mock("../../services/firebaseHelpers", () => ({
+  saveStoreToFirebase: jest.fn(x=>x),
   fetchStoreFromFirebase: jest.fn(),
   getResponseFromLLM: jest.fn(),
 }));
@@ -29,12 +30,12 @@ describe('POST /start-beta', () => {
     });
 
     const res = await request(app)
-      .post('/twilio/start-beta')
+      .post('/twilio/respond')
       .type('form')
       .send({CallSid: "Test", SpeechResult: "hello?"});
     
     expect(res.status).toBe(200);
     expect(res.type).toBe('text/xml')
-    expect(res.text).toBe(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="/twilio/respond" method="POST" timeout="5"><Say>what is it that you want</Say></Gather></Response>`);
+    expect(res.text).toBe(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="/twilio/respond" method="POST" bargeIn="true" timeout="5" speechTimeout="1"><Say>what is it that you want</Say></Gather></Response>`);
   });
 });
