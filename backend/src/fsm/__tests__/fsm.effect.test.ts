@@ -5,56 +5,19 @@ jest.mock("../../services/firebaseHelpers", () => ({
 
 
 import { Effects } from "../effects";
-import { createStore, TwilioVoiceWebhookParams, updateStoreState } from "../store";
+import { createStore, updateStoreState } from "../../models/store";
 
 import { fetchStoreFromFirebase, getResponseFromLLM } from "../../services/firebaseHelpers";
-function createTwilioParams(): TwilioVoiceWebhookParams {
-  return {
-    CallSid: "Test",
-    AccountSid: "Test",
-    From: "Test",
-    To: "Test",
-    CallStatus: "in-progress",
-    ApiVersion: "Test",
-    Direction: "inbound",
-    ToState: "Test",
-    ToZip: "Test",
-    ToCity: "Test",
-    ToCountry: "Test",
-    FromZip: "Test",
-    FromCity: "Test",
-    FromCountry: "Test",
-    CallerCountry: "Test",
-    CallerState: "Test",
-    CallerCity: "Test",
-    CallerZip: "Test",
-
-
-    Caller: "Test",
-    Called: "Test",
-  
-    FromState: "Test",
-  
-    CalledCity: "Test",
-    CalledState: "Test",
-    CalledZip: "Test",
-    CalledCountry: "Test",
-  
-    SpeechResult: "Test",
-    Confidence: "0.3",
-  
-    Language: "test"
-  };
-}
+import { createTwilioParams } from "../../test/createTwilioParams";
 
 describe('Effects', () => {
 
   test('RESPONDED effect produces correct next state', async () => {
 
-    const mockStore = createStore({CallSid: "Test"});
+    const twilioParams = createTwilioParams();
+    const mockStore = createStore(twilioParams);
     (fetchStoreFromFirebase as jest.Mock).mockResolvedValue(mockStore);
 
-    const twilioParams = createTwilioParams();
 
       const result = await Effects['RESPONDED']({
         type: 'RESPONDED',
@@ -73,7 +36,8 @@ describe('Effects', () => {
 
   test('WAITING_FOR_USER effect produces correct next state', async () => {
 
-    const initialStore = createStore({CallSid: "Test"});
+    const twilioParams = createTwilioParams();
+    const initialStore = createStore(twilioParams);
 
       const result = await Effects['WAITING_FOR_USER'](initialStore, {
         type: 'WAITING_FOR_USER',
@@ -85,8 +49,8 @@ describe('Effects', () => {
 
   test('FETCHING_CUSTOMER_INPUT effect produces correct next state', async () => {
 
-    const initialStore = createStore({CallSid: "Test"});
     const twilioParams = createTwilioParams();
+    const initialStore = createStore(twilioParams);
     const testSpeech = "this is the first Test";
     twilioParams.SpeechResult = testSpeech;
 
@@ -112,13 +76,16 @@ describe('Effects', () => {
     });
 
     expect(secondResult.nextEvent?.type).toEqual('NO_CUSTOMER_INPUT');
-    expect(secondResult.updatedStore).toEqual(updateStoreState(initialStore, "NO_CUSTOMER_INPUT"));
+    const secondExpectedStore = updateStoreState(initialStore, "NO_CUSTOMER_INPUT");
+    secondExpectedStore.lastUpdated = secondResult.updatedStore?.lastUpdated;
+    expect(secondResult.updatedStore).toEqual(secondExpectedStore);
 
   });
 
   test('PROCESSING_LLM effect produces correct next state', async () => {
 
-    const initialStore = createStore({CallSid: "Test"});
+    const twilioParams = createTwilioParams();
+    const initialStore = createStore(twilioParams);
 
 
 
@@ -178,7 +145,8 @@ describe('Effects', () => {
 
   test('APPEND_MESSAGE_CONVO effect produces correct next state', async () => {
 
-    const initialStore = createStore({CallSid: "Test"});
+    const twilioParams = createTwilioParams();
+    const initialStore = createStore(twilioParams);
     initialStore.messages.push({customerToMachine: "i am the customer"});
 
 
@@ -203,7 +171,8 @@ describe('Effects', () => {
 
   test('SENDING_RESPONSE effect produces correct next state', async () => {
 
-    const initialStore = createStore({CallSid: "Test"});
+    const twilioParams = createTwilioParams();
+    const initialStore = createStore(twilioParams);
 
     const result = await Effects['SENDING_RESPONSE'](initialStore, {
       type: 'SENDING_RESPONSE', payload: {expectReply: true, message: "this is a test message"}

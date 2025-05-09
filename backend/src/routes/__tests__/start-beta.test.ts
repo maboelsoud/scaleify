@@ -7,13 +7,15 @@ jest.mock("../../services/firebaseHelpers", () => ({
 import request from "supertest";
 import { app } from "../..";
 import { fetchStoreFromFirebase, getResponseFromLLM } from "../../services/firebaseHelpers";
-import { createStore } from "../../fsm/store";
+import { createStore } from "../../models/store";
+import { createTwilioParams } from "../../test/createTwilioParams";
 
 
 describe('POST /start-beta', () => {
   test('/POST /start-beta returns valid TwiML', async ()=> {
 
-    const mockStore = createStore({CallSid: "Test"});
+    const twilioParams = createTwilioParams();
+    const mockStore = createStore(twilioParams);
     mockStore.messages.push({
       machineToCustomer: "hello welcome to scaleify, what would you like to do today?",
     });

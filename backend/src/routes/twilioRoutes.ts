@@ -29,72 +29,36 @@ export function getActiveConvo(req: Request) : ConvoHistory | undefined{
 
 const router = Router();
 
-router.post('/respond', (req: Request, resp: Response)=> {
-    const activeConvo = getActiveConvo(req);
-
-    if (!activeConvo
-    ) {
-        resp.status(500).send("serverError");
-        return;
-    }
-
-
-    const twimlResp = new VoiceResponse();
-
-    if (activeConvo.length === 0) {
-      activeConvo.push({
-        machine: "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?",
-      });
-
-      twimlResp.gather({
-        input: ["speech"],
-        action: '/twilio/respond',
-        method: "POST",
-        timeout: 5,
-      }).say(activeConvo[activeConvo.length - 1].machine);
-
-      resp.send(twimlResp.toString());
-      return;
-
-    } else {
-
-    const lastTalk = activeConvo[activeConvo.length - 1];
-    lastTalk.customer = req.body.SpeechResult;
-
-      if (activeConvo.length  < 3) {
-  
-        activeConvo.push({
-          machine: `got it, you said: ${lastTalk?.customer}, anything else you want to say?`
-        });
-  
-        twimlResp.gather({
+router.post('/start', async (req: Request, res: Response)=> {
+  await dispatch({event: {type: "CREATED", payload: {twilioParams: req.body }}, emit: (event)=> {
+    console.log("🚀 ~ twilioRoutes.ts:99 ~ awaitdispatch ~ event:", event);
+    if (event.type === "SENDING_RESPONSE" && event.payload) {
+      const { message , expectReply = false } = event.payload;
+      const twimlResp = new VoiceResponse();
+      if (expectReply) {
+        const gather = twimlResp.gather({
           input: ["speech"],
           action: '/twilio/respond',
           method: "POST",
+          bargeIn: true,
           timeout: 5,
-        }).say(activeConvo[activeConvo.length - 1].machine);
-  
-        resp.send(twimlResp.toString());
-  
-        return;
-  
-      } else {
-  
-        activeConvo.push({
-          machine: `got it, you said: ${lastTalk?.customer}, thank you for calling Scaleify and have a great day!`
+          speechTimeout: "1",
         });
-  
-        twimlResp.say(activeConvo[activeConvo.length - 1].machine);
-      
+        if (message) {
+          gather.say(message);
+        }
+      } else {
+        if (message) {
+          twimlResp.say(message);
+        }
         twimlResp.hangup();
-        resp.send(twimlResp.toString());
-        return;
       }
+      res.type('text/xml').send(twimlResp.toString());
     }
-
+  }});
 });
 
-router.post('/start-beta', async (req: Request, res: Response)=> {
+router.post('/respond', async (req: Request, res: Response)=> {
   
   await dispatch({event: {type: "RESPONDED", payload: {twilioParams: req.body }}, emit: (event)=> {
 
@@ -108,7 +72,9 @@ router.post('/start-beta', async (req: Request, res: Response)=> {
           input: ["speech"],
           action: '/twilio/respond',
           method: "POST",
+          bargeIn: true,
           timeout: 5,
+          speechTimeout: "1",
         });
         if (message) {
           gather.say(message);
@@ -121,7 +87,12 @@ router.post('/start-beta', async (req: Request, res: Response)=> {
 
       res.type('text/xml').send(twimlResp.toString());
   
+    } else if (event.type === "ESCALATE_TO_HUMAN") {
+      const twimlResp = new VoiceResponse();
+      twimlResp.dial(event.payload.operatorNumber);
+      res.type('text/xml').send(twimlResp.toString());
     }
+
   }});
 });
 

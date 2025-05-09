@@ -5,13 +5,15 @@ jest.mock("../../services/firebaseHelpers", () => ({
 }));
 
 import { dispatch, EventType } from "../dispatcher";
-import { createStore, FullStore, TwilioVoiceWebhookParams } from "../store";
+import { createStore, FullStore, TwilioVoiceWebhookParams } from "../../models/store";
 import { fetchStoreFromFirebase, saveStoreToFirebase, getResponseFromLLM } from "../../services/firebaseHelpers";
+import { createTwilioParams } from "../../test/createTwilioParams";
 
 describe('FSM - Integration', () => {
   test('FSM: Created flow to greeting', async ()=> {
 
-    const mockStore = createStore({CallSid: "TestCallSid"});
+    const twilioParams = createTwilioParams("TestCallSid");
+    const mockStore = createStore(twilioParams);
     (saveStoreToFirebase as jest.Mock).mockResolvedValue(mockStore);
 
     const seenEvents: EventType[] = [];
@@ -39,9 +41,9 @@ describe('FSM - Integration', () => {
       throw new Error("Final store is undefined");
     }
     expect(finalStore).toEqual({
-      customerId: "TestCallSid",
+      CallSid: "TestCallSid",
       state: "WAITING_FOR_USER",
-      twilioParams: {"CallSid": "TestCallSid"},
+      twilioParams: twilioParams,
       lastUpdated: finalStore.lastUpdated,
       messages: [
         {
@@ -56,7 +58,8 @@ describe('FSM - Integration', () => {
 
     // const initialStore = createStore({CallSid: "Test"});
 
-    const mockStore = createStore({CallSid: "TestCallSid"});
+    const twilioParams = createTwilioParams("TestCallSid");
+    const mockStore = createStore(twilioParams);
     (fetchStoreFromFirebase as jest.Mock).mockResolvedValue(mockStore);
 
     (getResponseFromLLM as jest.Mock).mockResolvedValue({
@@ -94,9 +97,9 @@ describe('FSM - Integration', () => {
     }
     // console.log("🚀 ~ fsm.integration.test.ts:52 ~ test ~ finalStore:", finalStore);
     expect(finalStore).toEqual({
-      customerId: "TestCallSid",
+      CallSid: "TestCallSid",
       state: "WAITING_FOR_USER",
-      twilioParams: {"CallSid": "TestCallSid"},
+      twilioParams: twilioParams,
       lastUpdated: finalStore.lastUpdated,
       messages: [
         {
