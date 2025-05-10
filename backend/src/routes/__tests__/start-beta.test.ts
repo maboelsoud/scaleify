@@ -36,6 +36,6 @@ describe('POST /start-beta', () => {
     
     expect(res.status).toBe(200);
     expect(res.type).toBe('text/xml')
-    expect(res.text).toBe(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="/twilio/respond" method="POST" bargeIn="true" timeout="5" speechTimeout="1"><Say>what is it that you want</Say></Gather></Response>`);
+    expect(res.text).toBe(`<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" action="/twilio/respond" method="POST" bargeIn="true" timeout="5" speechTimeout="1" actionOnEmptyResult="true"><Say>what is it that you want</Say></Gather></Response>`);
   });
 });

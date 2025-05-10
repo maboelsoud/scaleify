@@ -1,3 +1,4 @@
+import { SYSTEM_MESSAGES } from "../fsm/effects";
 import { Business } from "../models/business";
 import { ConvoHistory, FullStore } from "../models/store";
 import { getFirestoreDb } from "./firebaseService";
@@ -80,6 +81,24 @@ export const executeCommand = async ( commandFn: string ): Promise<{success: boo
 };
 export const getResponseFromLLM = async ( convoHistory: string | ConvoHistory ):
 Promise<{type: "text" | "fetch" | "execute", expectReply: boolean , text?: string, fetch?: string, execute?: string} | void> => {
+
+  if (Array.isArray(convoHistory)) {
+    const lastMessage = convoHistory[convoHistory.length-1]?.systemToMachine || "";
+    if (lastMessage === SYSTEM_MESSAGES.noInput) {
+      return {
+        type: "text",
+        expectReply: true,
+        text: "Sorry, I didn't hear anything. Can you hear me?",
+      }
+    } else if (lastMessage === SYSTEM_MESSAGES.noInputTwice) {
+      return {
+        type: "text",
+        expectReply: false,
+        text: "Hey, I haven’t heard anything from you. Please call back when you're ready to continue.",
+      }
+    }
+  }
+
   const demoMessage: string = Array.isArray(convoHistory)?
     convoHistory[convoHistory.length-1]?.customerToMachine || ""
     : convoHistory;
