@@ -2,9 +2,6 @@ import { saveStoreToFirebase, fetchStoreFromFirebase, getResponseFromLLM, execut
 import { EventType } from "./dispatcher";
 import { StoreState, FullStore, createStore, singleTalk, updateStoreState } from "../models/store";
 
-// fake functions to simulate the behavior until we have the real ones
-
-
 export type EventOfType<T extends StoreState> = Extract<EventType, { type: T }>;
 
 export type StorelessStates = "CREATED" | "RESPONDED" | "ERROR_NO_CONVO" | "ESCALATE_TO_HUMAN";
@@ -12,6 +9,12 @@ export type StorefulStates = Exclude<StoreState, StorelessStates>;
 
 export type storelessHandler<T extends StorelessStates>  = (e: EventOfType<T>)=> Promise<{updatedStore?: FullStore, nextEvent?: EventType} | void>
 export type storeFullHandler<T extends StorefulStates>  = (b: FullStore , e: EventOfType<T>)=> Promise<{updatedStore: FullStore, nextEvent?: EventType}>
+
+export const SYSTEM_MESSAGES = {
+  greeting: "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?",
+  noInput: "customer did not provide input",
+  noInputTwice: "customer did not provide input twice in a row. Please end politely.",
+};
 
 const CreatedHandler: storelessHandler<"CREATED"> = async (e)=>{
   const createdStore = await saveStoreToFirebase(createStore(e.payload.twilioParams));
@@ -26,9 +29,6 @@ const RespondedHandler:storelessHandler<"RESPONDED">  = async (event)=>{
   const { CallSid } = event.payload.twilioParams;
   const fetchedStore = await fetchStoreFromFirebase(CallSid);
   if (fetchedStore) {
-    // rewriting the store with the new twilioParams because its hitting route /responded again
-    // TODO: check if this is the right thing to do
-    // fetchedStore.twilioParams = event.payload.twilioParams;
     return { updatedStore: updateStoreState(fetchedStore, "FETCHING_CUSTOMER_INPUT"),
       nextEvent: {type: "FETCHING_CUSTOMER_INPUT", payload: { twilioParams: event.payload.twilioParams }}};
   }
@@ -37,25 +37,30 @@ const RespondedHandler:storelessHandler<"RESPONDED">  = async (event)=>{
 
 const ProcessingGreetingHandler: storeFullHandler<"PROCESSING_GREETING"> = async (store) => {
   // todo: make this a function that takes in the store and returns the greeting based on the client
-  const greeting = "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?";
   return { updatedStore: updateStoreState(store, "APPEND_MESSAGE_CONVO"),
-    nextEvent: { type: "APPEND_MESSAGE_CONVO", payload: { expectReply: true, message: greeting }}}
+    nextEvent: { type: "APPEND_MESSAGE_CONVO", payload: { expectReply: true, message: SYSTEM_MESSAGES.greeting }}}
 };
 
 const WaitingForUserHandler: storeFullHandler<"WAITING_FOR_USER"> = async (store)=>{
-  // console.log('in WAITING_FOR_USER, b', b, 'e', e);
   // we dont do anything because we are waiting for the user to say something
   // no need to update the store because we are not updating the state
   const finalStore = await saveStoreToFirebase(store);
   return { updatedStore: finalStore};
 };
 const NoCustomerInputHandler: storeFullHandler<"NO_CUSTOMER_INPUT"> = async (store)=>{
+  // TODO: do we really need this?
   const lastMessage = store.messages[store.messages.length - 1];
   if (!lastMessage) {
     return { updatedStore: updateStoreState(store, "ERROR_LLM"), nextEvent: {type: "ERROR_LLM", payload: {error: "no last message"}}};
   }
+
+  if (lastMessage.systemToMachine === SYSTEM_MESSAGES.noInput
+    || lastMessage.systemToMachine === SYSTEM_MESSAGES.noInputTwice) {
+    return { updatedStore: updateStoreState(store, "PROCESSING_LLM"),
+      nextEvent: {type: "PROCESSING_LLM", payload: {expectReply: true, who: "system", message: SYSTEM_MESSAGES.noInputTwice}}};
+  }
   return { updatedStore: updateStoreState(store, "PROCESSING_LLM"),
-    nextEvent: {type: "PROCESSING_LLM", payload: {expectReply: true, who: "system", message: "customer did not provide input"}}};
+    nextEvent: {type: "PROCESSING_LLM", payload: {expectReply: true, who: "system", message: SYSTEM_MESSAGES.noInput}}};
 };
 
 const FetchingCustomerInputHandler: storeFullHandler<"FETCHING_CUSTOMER_INPUT"> = async (store, event) => {
@@ -238,9 +243,6 @@ const EscalateToHumanHandler: storelessHandler<"ESCALATE_TO_HUMAN"> = async ()=>
   return;
 };
 
-
-// export const Effects: Record<StoreState, effectHandler | effectHandlerWithFullStore > = {
-  // : { [K in StoreState]: effectHandler<K> | effectHandlerWithFullStore<K> }
 export const Effects = {
   "CREATED": CreatedHandler,
   "RESPONDED": RespondedHandler,

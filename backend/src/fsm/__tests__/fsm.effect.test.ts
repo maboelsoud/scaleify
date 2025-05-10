@@ -5,7 +5,7 @@ jest.mock("../../services/firebaseHelpers", () => ({
 }));
 
 
-import { Effects } from "../effects";
+import { Effects, SYSTEM_MESSAGES } from "../effects";
 import { createStore, updateStoreState } from "../../models/store";
 
 import { fetchStoreFromFirebase, getResponseFromLLM } from "../../services/firebaseHelpers";
@@ -67,8 +67,7 @@ describe('Effects', () => {
     if (result.nextEvent?.type !== "APPEND_MESSAGE_CONVO") {
       throw new Error("next event is not APPEND_MESSAGE_CONVO");
     }
-    expect(result.nextEvent?.payload.message).toEqual(
-      "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?");
+    expect(result.nextEvent?.payload.message).toEqual(SYSTEM_MESSAGES.greeting);
   });
 
   test('WAITING_FOR_USER effect produces correct next state', async () => {
@@ -117,6 +116,47 @@ describe('Effects', () => {
     const secondExpectedStore = updateStoreState(initialStore, "NO_CUSTOMER_INPUT");
     secondExpectedStore.lastUpdated = secondResult.updatedStore?.lastUpdated;
     expect(secondResult.updatedStore).toEqual(secondExpectedStore);
+
+  });
+
+  test('NO_CUSTOMER_INPUT effect produces correct next state', async () => {
+    const twilioParams = createTwilioParams();
+    const initialStore = createStore(twilioParams);
+    initialStore.messages = [
+      {
+        machineToCustomer: "welcome",
+      },
+    ];
+
+    initialStore.twilioParams.SpeechResult = undefined;
+    const result = await Effects['NO_CUSTOMER_INPUT'](initialStore, {
+      type: 'NO_CUSTOMER_INPUT',
+    });
+
+    expect(result.nextEvent?.type).toEqual('PROCESSING_LLM');
+    expect(result.updatedStore.state).toEqual("PROCESSING_LLM");
+    if (result.nextEvent?.type !== "PROCESSING_LLM") {
+      throw new Error("should not happen");
+    }
+
+    expect(result.nextEvent?.payload.message).toEqual(SYSTEM_MESSAGES.noInput);
+    expect(result.nextEvent?.payload.who).toEqual("system");
+    
+    initialStore.messages.push({
+      systemToMachine: SYSTEM_MESSAGES.noInput,
+    });
+
+    const secondResult = await Effects['NO_CUSTOMER_INPUT'](initialStore, {
+      type: 'NO_CUSTOMER_INPUT',
+    });
+
+    expect(secondResult.nextEvent?.type).toEqual('PROCESSING_LLM');
+    expect(secondResult.updatedStore.state).toEqual("PROCESSING_LLM");
+    if (secondResult.nextEvent?.type !== "PROCESSING_LLM") {
+      throw new Error("should not happen");
+    }
+    expect(secondResult.nextEvent?.payload.message).toEqual(SYSTEM_MESSAGES.noInputTwice);
+    expect(secondResult.nextEvent?.payload.who).toEqual("system");
 
   });
 
