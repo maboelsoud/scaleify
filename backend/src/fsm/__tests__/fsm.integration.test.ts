@@ -8,26 +8,26 @@ import { SYSTEM_MESSAGES } from "../effects";
 import { createMockFirestore } from "../../test/mockFirestore";
 import { Firestore } from "firebase-admin/firestore";
 
-describe('FSM - Integration', () => {
-
+describe("FSM - Integration", () => {
   afterEach(() => {
     jest.restoreAllMocks(); // restores all spied functions to original
   });
 
-  test('FSM: Created flow to greeting', async ()=> {
-
+  test("FSM: Created flow to greeting", async () => {
     const twilioParams = createTwilioParams("TestCallSid");
 
     const saveSpy = jest.spyOn(firebaseHelpers, "saveStoreToFirebase");
-    saveSpy.mockImplementation(async x=>x);
+    saveSpy.mockImplementation(async (x) => x);
 
     const seenEvents: EventType[] = [];
-    const finalStore = await dispatch({event: {type: "CREATED", payload: {twilioParams}},
-      emit: (event)=> {
-      seenEvents.push(event);
-    }});
+    const finalStore = await dispatch({
+      event: { type: "CREATED", payload: { twilioParams } },
+      emit: (event) => {
+        seenEvents.push(event);
+      },
+    });
 
-    expect(seenEvents.map(e=> e.type)).toEqual([
+    expect(seenEvents.map((e) => e.type)).toEqual([
       "CREATED",
       "PROCESSING_GREETING",
       "APPEND_MESSAGE_CONVO",
@@ -35,27 +35,27 @@ describe('FSM - Integration', () => {
       "WAITING_FOR_USER",
     ]);
 
-
     if (!finalStore) {
       throw new Error("Final store is undefined");
     }
     const mockStore = createStore(twilioParams);
     mockStore.state = "WAITING_FOR_USER";
-    mockStore.messages = [{
+    mockStore.messages = [
+      {
         machineToCustomer: SYSTEM_MESSAGES.greeting,
-    }];
+      },
+    ];
     mockStore.lastUpdated = finalStore.lastUpdated;
-    
+
     expect(finalStore).toEqual(mockStore);
   });
 
-  test('FSM: Responded flow to response', async ()=> {
-
+  test("FSM: Responded flow to response", async () => {
     const twilioParams = createTwilioParams("TestCallSid");
     const mockStore = createStore(twilioParams);
 
     const saveSpy = jest.spyOn(firebaseHelpers, "saveStoreToFirebase");
-    saveSpy.mockImplementation(async x=>x);
+    saveSpy.mockImplementation(async (x) => x);
 
     const fetchSpy = jest.spyOn(firebaseHelpers, "fetchStoreFromFirebase");
     fetchSpy.mockResolvedValue(mockStore);
@@ -69,16 +69,22 @@ describe('FSM - Integration', () => {
 
     const seenEvents: EventType[] = [];
 
-    const finalStore = await dispatch({event: {type: "RESPONDED", payload: {
-      twilioParams: {
-        CallSid: "TestCallSid",
-        SpeechResult: "hello"
-      } as TwilioVoiceWebhookParams
-    }}, emit: (event)=> {
-      seenEvents.push(event);
-    }});
+    const finalStore = await dispatch({
+      event: {
+        type: "RESPONDED",
+        payload: {
+          twilioParams: {
+            CallSid: "TestCallSid",
+            SpeechResult: "hello",
+          } as TwilioVoiceWebhookParams,
+        },
+      },
+      emit: (event) => {
+        seenEvents.push(event);
+      },
+    });
 
-    expect(seenEvents.map(e=> e.type)).toEqual([
+    expect(seenEvents.map((e) => e.type)).toEqual([
       "RESPONDED",
       "FETCHING_CUSTOMER_INPUT",
       "PROCESSING_LLM",
@@ -97,15 +103,14 @@ describe('FSM - Integration', () => {
       lastUpdated: finalStore.lastUpdated,
       messages: [
         {
-          customerToMachine: 'hello',
+          customerToMachine: "hello",
           machineToCustomer: "what is it that you want",
-        }
-      ]
+        },
+      ],
     });
   });
 
-  test('FSM: Responded with silence twice', async ()=> {
-
+  test("FSM: Responded with silence twice", async () => {
     const twilioParams = createTwilioParams("TestCallSid");
     twilioParams.SpeechResult = undefined; // not necessary but it's good practice
 
@@ -117,22 +122,28 @@ describe('FSM - Integration', () => {
     ];
 
     const saveSpy = jest.spyOn(firebaseHelpers, "saveStoreToFirebase");
-    saveSpy.mockImplementation(async x=>x);
+    saveSpy.mockImplementation(async (x) => x);
 
     const fetchSpy = jest.spyOn(firebaseHelpers, "fetchStoreFromFirebase");
     fetchSpy.mockResolvedValue(mockStore);
 
     let seenEvents: EventType[] = [];
 
-    const firstStore = await dispatch({event: {type: "RESPONDED", payload: {
-      twilioParams: {
-        CallSid: "TestCallSid",
-      } as TwilioVoiceWebhookParams
-    }}, emit: (event)=> {
-      seenEvents.push(event);
-    }});
+    const firstStore = await dispatch({
+      event: {
+        type: "RESPONDED",
+        payload: {
+          twilioParams: {
+            CallSid: "TestCallSid",
+          } as TwilioVoiceWebhookParams,
+        },
+      },
+      emit: (event) => {
+        seenEvents.push(event);
+      },
+    });
 
-    expect(seenEvents.map(e=> e.type)).toEqual([
+    expect(seenEvents.map((e) => e.type)).toEqual([
       "RESPONDED",
       "FETCHING_CUSTOMER_INPUT",
       "NO_CUSTOMER_INPUT",
@@ -153,28 +164,34 @@ describe('FSM - Integration', () => {
       lastUpdated: firstStore.lastUpdated,
       messages: [
         {
-          machineToCustomer: 'welcome',
+          machineToCustomer: "welcome",
         },
         {
           systemToMachine: SYSTEM_MESSAGES.noInput,
-          machineToCustomer: "Sorry, I didn't hear anything. Can you hear me?"
-        }
-      ]
+          machineToCustomer: "Sorry, I didn't hear anything. Can you hear me?",
+        },
+      ],
     });
 
     fetchSpy.mockResolvedValue(firstStore);
 
     seenEvents = [];
 
-    const secondStore = await dispatch({event: {type: "RESPONDED", payload: {
-      twilioParams: {
-        CallSid: "TestCallSid",
-      } as TwilioVoiceWebhookParams
-    }}, emit: (event)=> {
-      seenEvents.push(event);
-    }});
+    const secondStore = await dispatch({
+      event: {
+        type: "RESPONDED",
+        payload: {
+          twilioParams: {
+            CallSid: "TestCallSid",
+          } as TwilioVoiceWebhookParams,
+        },
+      },
+      emit: (event) => {
+        seenEvents.push(event);
+      },
+    });
 
-    expect(seenEvents.map(e=> e.type)).toEqual([
+    expect(seenEvents.map((e) => e.type)).toEqual([
       "RESPONDED",
       "FETCHING_CUSTOMER_INPUT",
       "NO_CUSTOMER_INPUT",
@@ -195,70 +212,99 @@ describe('FSM - Integration', () => {
       lastUpdated: secondStore.lastUpdated,
       messages: [
         {
-          machineToCustomer: 'welcome',
+          machineToCustomer: "welcome",
         },
         {
           systemToMachine: SYSTEM_MESSAGES.noInput,
-          machineToCustomer: "Sorry, I didn't hear anything. Can you hear me?"
+          machineToCustomer: "Sorry, I didn't hear anything. Can you hear me?",
         },
         {
           systemToMachine: SYSTEM_MESSAGES.noInputTwice,
-          machineToCustomer: "Hey, I haven’t heard anything from you. Please call back when you're ready to continue."
-        }
-      ]
+          machineToCustomer:
+            "Hey, I haven’t heard anything from you. Please call back when you're ready to continue.",
+        },
+      ],
     });
-
   });
 
-  test('FSM: Responded with silence once then replied then silence twice', async ()=> {
-    const mockDb = createMockFirestore({
-    });
+  test("FSM: Responded with silence once then replied then silence twice", async () => {
+    const mockDb = createMockFirestore({});
 
-    jest.spyOn(firebaseService, 'getFirestoreDb').mockImplementation(()=> mockDb as unknown as Firestore);
+    jest
+      .spyOn(firebaseService, "getFirestoreDb")
+      .mockImplementation(() => mockDb as unknown as Firestore);
     const seenEvents: EventType[] = [];
 
-    await dispatch({event: {type: "CREATED", payload: {
-      twilioParams: {
-        CallSid: "TestCallSid",
-      } as TwilioVoiceWebhookParams
-    }},
-      emit: (event)=> {
-      seenEvents.push(event);
-    }});
+    await dispatch({
+      event: {
+        type: "CREATED",
+        payload: {
+          twilioParams: {
+            CallSid: "TestCallSid",
+          } as TwilioVoiceWebhookParams,
+        },
+      },
+      emit: (event) => {
+        seenEvents.push(event);
+      },
+    });
 
-    await dispatch({event: {type: "RESPONDED", payload: {
-      twilioParams: {
-        CallSid: "TestCallSid",
-      } as TwilioVoiceWebhookParams
-    }}, emit: (event)=> {
-      seenEvents.push(event);
-    }});
+    await dispatch({
+      event: {
+        type: "RESPONDED",
+        payload: {
+          twilioParams: {
+            CallSid: "TestCallSid",
+          } as TwilioVoiceWebhookParams,
+        },
+      },
+      emit: (event) => {
+        seenEvents.push(event);
+      },
+    });
 
-    await dispatch({event: {type: "RESPONDED", payload: {
-      twilioParams: {
-        CallSid: "TestCallSid",
-        SpeechResult: "hello"
-      } as TwilioVoiceWebhookParams
-    }}, emit: (event)=> {
-      seenEvents.push(event);
-    }});
+    await dispatch({
+      event: {
+        type: "RESPONDED",
+        payload: {
+          twilioParams: {
+            CallSid: "TestCallSid",
+            SpeechResult: "hello",
+          } as TwilioVoiceWebhookParams,
+        },
+      },
+      emit: (event) => {
+        seenEvents.push(event);
+      },
+    });
 
+    await dispatch({
+      event: {
+        type: "RESPONDED",
+        payload: {
+          twilioParams: {
+            CallSid: "TestCallSid",
+          } as TwilioVoiceWebhookParams,
+        },
+      },
+      emit: (event) => {
+        seenEvents.push(event);
+      },
+    });
 
-    await dispatch({event: {type: "RESPONDED", payload: {
-      twilioParams: {
-        CallSid: "TestCallSid",
-      } as TwilioVoiceWebhookParams
-    }}, emit: (event)=> {
-      seenEvents.push(event);
-    }});
-
-    const fifthStore = await dispatch({event: {type: "RESPONDED", payload: {
-      twilioParams: {
-        CallSid: "TestCallSid",
-      } as TwilioVoiceWebhookParams
-    }}, emit: (event)=> {
-      seenEvents.push(event);
-    }});
+    const fifthStore = await dispatch({
+      event: {
+        type: "RESPONDED",
+        payload: {
+          twilioParams: {
+            CallSid: "TestCallSid",
+          } as TwilioVoiceWebhookParams,
+        },
+      },
+      emit: (event) => {
+        seenEvents.push(event);
+      },
+    });
 
     if (!fifthStore) {
       throw new Error("fifth store is undefined");
@@ -277,23 +323,23 @@ describe('FSM - Integration', () => {
         },
         {
           systemToMachine: SYSTEM_MESSAGES.noInput,
-          machineToCustomer: "Sorry, I didn't hear anything. Can you hear me?"
+          machineToCustomer: "Sorry, I didn't hear anything. Can you hear me?",
         },
         {
-          customerToMachine: 'hello',
-          machineToCustomer: "this is a response from the LLM, customer message: hello"
+          customerToMachine: "hello",
+          machineToCustomer:
+            "this is a response from the LLM, customer message: hello",
         },
         {
           systemToMachine: SYSTEM_MESSAGES.noInput,
-          machineToCustomer: "Sorry, I didn't hear anything. Can you hear me?"
+          machineToCustomer: "Sorry, I didn't hear anything. Can you hear me?",
         },
         {
           systemToMachine: SYSTEM_MESSAGES.noInputTwice,
-          machineToCustomer: "Hey, I haven’t heard anything from you. Please call back when you're ready to continue."
-        }
-      ] 
-    })
-
-  })
-
+          machineToCustomer:
+            "Hey, I haven’t heard anything from you. Please call back when you're ready to continue.",
+        },
+      ],
+    });
+  });
 });

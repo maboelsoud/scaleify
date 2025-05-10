@@ -1,7 +1,8 @@
 import { TwilioVoiceWebhookParams } from "../models/store";
 
-
-export function createTwilioParams(CallSid: string ="Test"): TwilioVoiceWebhookParams {
+export function createTwilioParams(
+  CallSid: string = "Test",
+): TwilioVoiceWebhookParams {
   return {
     CallSid,
     AccountSid: "Test",
@@ -22,20 +23,19 @@ export function createTwilioParams(CallSid: string ="Test"): TwilioVoiceWebhookP
     CallerCity: "Test",
     CallerZip: "Test",
 
-
     Caller: "Test",
     Called: "Test",
-  
+
     FromState: "Test",
-  
+
     CalledCity: "Test",
     CalledState: "Test",
     CalledZip: "Test",
     CalledCountry: "Test",
-  
+
     SpeechResult: "Test",
     Confidence: "0.3",
-  
-    Language: "test"
+
+    Language: "test",
   };
 }
