@@ -1,4 +1,3 @@
-
 interface BusinessUser {
   phoneNumber: string;
   email: string;
@@ -30,9 +29,8 @@ export function createBusiness(
   };
 }
 
-
 export function addBusinessUser(business: Business, user: BusinessUser): void {
-  if (!business.admins.find(x=> x.email === user.email)) {
-    business.admins.push(user)
+  if (!business.admins.find((x) => x.email === user.email)) {
+    business.admins.push(user);
   }
 }

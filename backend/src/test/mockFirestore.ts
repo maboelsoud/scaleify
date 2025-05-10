@@ -1,4 +1,7 @@
-type MockFirestoreData = Record<string, Record<string, Record<string, unknown>>>;
+type MockFirestoreData = Record<
+  string,
+  Record<string, Record<string, unknown>>
+>;
 
 interface MockDoc {
   exists: boolean;
@@ -29,27 +32,24 @@ export function createMockFirestore(initialData: MockFirestoreData = {}) {
     } satisfies MockDoc;
   });
 
-  const where = jest.fn(function (
-    field: string,
-    op: '==',
-    value: string
-  ) {
+  const where = jest.fn(function (field: string, op: "==", value: string) {
     return {
       get: jest.fn(
-        (async function (this: { _context: [string] }) {
+        async function (this: { _context: [string] }) {
           const [collectionName] = this._context;
           const collection = db[collectionName] || {};
 
           const docs = Object.entries(collection)
-            .map((keyValue) => (keyValue[1]))
-            .filter(doc => doc[field] === value)
+            .map((keyValue) => keyValue[1])
+            .filter((doc) => doc[field] === value);
 
           return {
             empty: docs.length === 0,
-            forEach: (cb: (doc: { data: () => Record<string, unknown> }) => void) =>
-              docs.forEach(d => cb({ data: () => d })),
+            forEach: (
+              cb: (doc: { data: () => Record<string, unknown> }) => void,
+            ) => docs.forEach((d) => cb({ data: () => d })),
           } satisfies MockSnapshot;
-        }).bind({ _context: this._context }) // wrapped and context-passed ✅
+        }.bind({ _context: this._context }), // wrapped and context-passed ✅
       ),
     };
   });
