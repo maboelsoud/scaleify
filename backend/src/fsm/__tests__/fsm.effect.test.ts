@@ -67,8 +67,7 @@ describe('Effects', () => {
     if (result.nextEvent?.type !== "APPEND_MESSAGE_CONVO") {
       throw new Error("next event is not APPEND_MESSAGE_CONVO");
     }
-    expect(result.nextEvent?.payload.message).toEqual(
-      "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?");
+    expect(result.nextEvent?.payload.message).toEqual(SYSTEM_MESSAGES.greeting);
   });
 
   test('WAITING_FOR_USER effect produces correct next state', async () => {

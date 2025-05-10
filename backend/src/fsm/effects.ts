@@ -11,6 +11,7 @@ export type storelessHandler<T extends StorelessStates>  = (e: EventOfType<T>)=>
 export type storeFullHandler<T extends StorefulStates>  = (b: FullStore , e: EventOfType<T>)=> Promise<{updatedStore: FullStore, nextEvent?: EventType}>
 
 export const SYSTEM_MESSAGES = {
+  greeting: "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?",
   noInput: "customer did not provide input",
   noInputTwice: "customer did not provide input twice in a row. Please end politely.",
 };
@@ -36,9 +37,8 @@ const RespondedHandler:storelessHandler<"RESPONDED">  = async (event)=>{
 
 const ProcessingGreetingHandler: storeFullHandler<"PROCESSING_GREETING"> = async (store) => {
   // todo: make this a function that takes in the store and returns the greeting based on the client
-  const greeting = "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?";
   return { updatedStore: updateStoreState(store, "APPEND_MESSAGE_CONVO"),
-    nextEvent: { type: "APPEND_MESSAGE_CONVO", payload: { expectReply: true, message: greeting }}}
+    nextEvent: { type: "APPEND_MESSAGE_CONVO", payload: { expectReply: true, message: SYSTEM_MESSAGES.greeting }}}
 };
 
 const WaitingForUserHandler: storeFullHandler<"WAITING_FOR_USER"> = async (store)=>{

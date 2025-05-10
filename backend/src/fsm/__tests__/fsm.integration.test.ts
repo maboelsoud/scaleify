@@ -42,7 +42,7 @@ describe('FSM - Integration', () => {
     const mockStore = createStore(twilioParams);
     mockStore.state = "WAITING_FOR_USER";
     mockStore.messages = [{
-        machineToCustomer: "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?",
+        machineToCustomer: SYSTEM_MESSAGES.greeting,
     }];
     mockStore.lastUpdated = finalStore.lastUpdated;
     
@@ -273,7 +273,7 @@ describe('FSM - Integration', () => {
       lastUpdated: fifthStore.lastUpdated,
       messages: [
         {
-          machineToCustomer: 'Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?',
+          machineToCustomer: SYSTEM_MESSAGES.greeting,
         },
         {
           systemToMachine: SYSTEM_MESSAGES.noInput,
