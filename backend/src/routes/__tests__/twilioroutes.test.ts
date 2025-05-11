@@ -1,8 +1,8 @@
 import request from "supertest";
 import { app } from "../..";
 import { createStore, TwilioVoiceWebhookParams } from "../../models/store";
-import * as firebaseService from "../../services/firebaseService";
-import * as firebaseHelpers from "../../services/firebaseHelpers";
+import * as firebaseService from "../../firebase/config";
+import * as firebaseHelpers from "../../firebase/dbHelpers";
 import { createMockFirestore } from "../../test/mockFirestore";
 import { Firestore } from "firebase-admin/firestore";
 import { SYSTEM_MESSAGES } from "../../fsm/effects";

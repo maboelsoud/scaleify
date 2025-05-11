@@ -12,7 +12,7 @@ import {
   getResponseFromLLM,
   saveBusinessToFirebase,
   saveStoreToFirebase,
-} from "../firebaseHelpers";
+} from "../dbHelpers";
 
 const expectedStore = {
   CallSid: "testCallSid",

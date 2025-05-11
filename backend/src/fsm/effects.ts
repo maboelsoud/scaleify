@@ -5,7 +5,7 @@ import {
   executeCommand,
   fetchBusinessInfoFromFirebase,
   fetchOperatorFromFirebase,
-} from "../services/firebaseHelpers";
+} from "../firebase/dbHelpers";
 import { EventType } from "./dispatcher";
 import {
   StoreState,

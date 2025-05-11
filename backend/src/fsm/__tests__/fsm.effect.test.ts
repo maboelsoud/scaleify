@@ -10,7 +10,7 @@ import { createStore, updateStoreState } from "../../models/store";
 import {
   fetchStoreFromFirebase,
   getResponseFromLLM,
-} from "../../services/firebaseHelpers";
+} from "../../firebase/dbHelpers";
 import { createTwilioParams } from "../../test/createTwilioParams";
 
 describe("Effects", () => {
