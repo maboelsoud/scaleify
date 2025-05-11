@@ -1,4 +1,4 @@
-jest.mock("../../services/firebaseHelpers", () => ({
+jest.mock("../../firebase/dbHelpers", () => ({
   saveStoreToFirebase: jest.fn((x) => x),
   fetchStoreFromFirebase: jest.fn(),
   getResponseFromLLM: jest.fn(),

@@ -46,8 +46,8 @@ const mockDb = createMockFirestore({
   },
 });
 
-jest.mock("../firebaseService", () => {
-  const actual = jest.requireActual("../firebaseHelpers");
+jest.mock("../config", () => {
+  const actual = jest.requireActual("../config");
   return {
     ...actual, // preserve saveStoreToFirebase, executeCommand, etc.
     getFirestoreDb: jest.fn(() => mockDb),
