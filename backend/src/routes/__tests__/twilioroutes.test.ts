@@ -29,7 +29,7 @@ describe("Twilio routes", () => {
     expect(res.text).toBe(`\
 <?xml version="1.0" encoding="UTF-8"?>\
 <Response><Gather input="speech" action="/twilio/respond" method="POST" \
-bargeIn="true" timeout="5" speechTimeout="1" actionOnEmptyResult="true">\
+speechModel="phone_call" bargeIn="true" timeout="5" speechTimeout="1" actionOnEmptyResult="true">\
 <Say>${SYSTEM_MESSAGES.greeting}</Say></Gather></Response>`);
 
     expect(mockDb.__data).toEqual({
@@ -80,7 +80,7 @@ bargeIn="true" timeout="5" speechTimeout="1" actionOnEmptyResult="true">\
     expect(res.text).toBe(`\
 <?xml version="1.0" encoding="UTF-8"?>\
 <Response><Gather input="speech" action="/twilio/respond" method="POST" \
-bargeIn="true" timeout="5" speechTimeout="1" actionOnEmptyResult="true">\
+speechModel="phone_call" bargeIn="true" timeout="5" speechTimeout="1" actionOnEmptyResult="true">\
 <Say>${expectedMessage}</Say></Gather></Response>`);
 
     expect(mockDb.__data).toEqual({

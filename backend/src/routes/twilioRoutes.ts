@@ -4,33 +4,53 @@ import { dispatch } from "../fsm/dispatcher";
 
 const router = Router();
 
+function createGather({
+  message,
+  expectReply,
+}: {
+  message: string;
+  expectReply: boolean;
+}): VoiceResponse {
+  const twimlResp = new VoiceResponse();
+  if (expectReply) {
+    const gather = twimlResp.gather({
+      input: ["speech"],
+      action: "/twilio/respond",
+      method: "POST",
+      speechModel: "phone_call",
+      bargeIn: true,
+      timeout: 5,
+      speechTimeout: "1",
+      actionOnEmptyResult: true,
+    });
+    if (message) {
+      gather.say({}, message);
+    }
+  } else {
+    if (message) {
+      twimlResp.say({}, message);
+    }
+    twimlResp.hangup();
+  }
+  return twimlResp;
+}
+
+function dialOperator({
+  operatorNumber,
+}: {
+  operatorNumber: string;
+}): VoiceResponse {
+  const twimlResp = new VoiceResponse();
+  twimlResp.dial(operatorNumber);
+  return twimlResp;
+}
+
 router.post("/start", async (req: Request, res: Response) => {
   await dispatch({
     event: { type: "CREATED", payload: { twilioParams: req.body } },
     emit: (event) => {
       if (event.type === "SENDING_RESPONSE" && event.payload) {
-        const { message, expectReply = false } = event.payload;
-        const twimlResp = new VoiceResponse();
-        if (expectReply) {
-          const gather = twimlResp.gather({
-            input: ["speech"],
-            action: "/twilio/respond",
-            method: "POST",
-            bargeIn: true,
-            timeout: 5,
-            speechTimeout: "1",
-            actionOnEmptyResult: true,
-          });
-          if (message) {
-            gather.say(message);
-          }
-        } else {
-          if (message) {
-            twimlResp.say(message);
-          }
-          twimlResp.hangup();
-        }
-        res.type("text/xml").send(twimlResp.toString());
+        res.type("text/xml").send(createGather(event.payload).toString());
       }
     },
   });
@@ -41,33 +61,9 @@ router.post("/respond", async (req: Request, res: Response) => {
     event: { type: "RESPONDED", payload: { twilioParams: req.body } },
     emit: (event) => {
       if (event.type === "SENDING_RESPONSE" && event.payload) {
-        const { message, expectReply = false } = event.payload;
-
-        const twimlResp = new VoiceResponse();
-        if (expectReply) {
-          const gather = twimlResp.gather({
-            input: ["speech"],
-            action: "/twilio/respond",
-            method: "POST",
-            bargeIn: true,
-            timeout: 5,
-            speechTimeout: "1",
-            actionOnEmptyResult: true,
-          });
-          if (message) {
-            gather.say(message);
-          }
-        } else {
-          if (message) {
-            twimlResp.say(message);
-          }
-        }
-
-        res.type("text/xml").send(twimlResp.toString());
+        res.type("text/xml").send(createGather(event.payload).toString());
       } else if (event.type === "ESCALATE_TO_HUMAN") {
-        const twimlResp = new VoiceResponse();
-        twimlResp.dial(event.payload.operatorNumber);
-        res.type("text/xml").send(twimlResp.toString());
+        res.type("text/xml").send(dialOperator(event.payload).toString());
       }
     },
   });
