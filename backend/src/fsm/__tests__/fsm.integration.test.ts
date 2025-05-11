@@ -1,7 +1,7 @@
 import { dispatch, EventType } from "../dispatcher";
 import { createStore, TwilioVoiceWebhookParams } from "../../models/store";
-import * as firebaseHelpers from "../../services/firebaseHelpers";
-import * as firebaseService from "../../services/firebaseService";
+import * as firebaseHelpers from "../../firebase/dbHelpers";
+import * as firebaseService from "../../firebase/config";
 
 import { createTwilioParams } from "../../test/createTwilioParams";
 import { SYSTEM_MESSAGES } from "../effects";

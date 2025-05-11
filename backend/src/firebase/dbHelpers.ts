@@ -1,7 +1,7 @@
 import { SYSTEM_MESSAGES } from "../fsm/effects";
 import { Business } from "../models/business";
 import { ConvoHistory, FullStore } from "../models/store";
-import { getFirestoreDb } from "./firebaseService";
+import { getFirestoreDb } from "./config";
 import { CollectionReference, DocumentData } from "firebase-admin/firestore";
 
 const COLLECTIONS = {
