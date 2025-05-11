@@ -3,6 +3,7 @@ import { config } from "dotenv";
 config(); // importing early so that other libraries can use env vars
 import twilio from "twilio";
 import twiliorouterRoutes from "./routes/twilioRoutes";
+import { getGeminiResponse } from "./llm/gemini";
 
 export const app = express();
 const port = process.env.PORT || 3001;
@@ -19,6 +20,19 @@ app.use("/twilio", twilio.webhook({ validate: false }), twiliorouterRoutes);
 
 app.get("/health", (req: Request, resp: Response) => {
   resp.send("Server is healthy");
+});
+
+app.post('/ai', async (req: Request, resp: Response)=> {
+  const prompt = req.body.text;
+  if (!prompt) {
+    throw "no prompt given"
+    resp.status(500).send("no prompt given");
+  } else {
+    const result = await getGeminiResponse(prompt);
+
+    resp.type('application/json').send({result});
+
+  }
 });
 
 // in testing jest complains that this keeps running after the test is over
