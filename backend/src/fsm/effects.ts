@@ -34,10 +34,11 @@ export type storeFullHandler<T extends StorefulStates> = (
 
 export const SYSTEM_MESSAGES = {
   greeting:
-    "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?",
-  noInput: "customer did not provide input",
+    // "Welcome to Scaleify, your solution to changing customer service for your business, what would you like to do today?",
+    "Welcome to Urban Flow Wellness. How can I help you today?",
+  noInput: "customer did not say anything",
   noInputTwice:
-    "customer did not provide input twice in a row. Please end politely.",
+    "customer did not say anything twice in a row. Please apologize and end the call.",
 };
 
 const CreatedHandler: storelessHandler<"CREATED"> = async (e) => {
@@ -208,21 +209,53 @@ const ProcessingLlmHandler: storeFullHandler<"PROCESSING_LLM"> = async (
       },
     };
   } else if (result.type === "fetch") {
+    // return {
+    //   updatedStore: updateStoreState(newStore, "FETCHING_INFO"),
+    //   nextEvent: {
+    //     type: "FETCHING_INFO",
+    //     payload: { message: result.fetch || "" },
+    //   },
+    // };
     return {
-      updatedStore: updateStoreState(newStore, "FETCHING_INFO"),
+      updatedStore: updateStoreState({
+    ...newStore,
+    messages: [...newStore.messages, {machineToSystem: result.fetch}],
+    lastUpdated: new Date().toISOString(),
+  }, "PROCESSING_LLM"),
       nextEvent: {
-        type: "FETCHING_INFO",
-        payload: { message: result.fetch || "" },
+        type: "PROCESSING_LLM",
+        payload: {
+          expectReply: true,
+          who: "system",
+          message: result.fetch?.includes('availability')?
+          "available":
+          "confirmed",
+        },
       },
     };
   } else {
     return {
-      updatedStore: updateStoreState(newStore, "EXECUTING_COMMAND"),
+      updatedStore: updateStoreState({
+        ...newStore,
+        messages: [...newStore.messages, {machineToSystem: result.execute}],
+        lastUpdated: new Date().toISOString(),
+      }, "PROCESSING_LLM"),
       nextEvent: {
-        type: "EXECUTING_COMMAND",
-        payload: { message: result.execute || "" },
+        type: "PROCESSING_LLM",
+        payload: {
+          expectReply: true,
+          who: "system",
+          message: "execution successful",
+        },
       },
     };
+    // return {
+    //   updatedStore: updateStoreState(newStore, "EXECUTING_COMMAND"),
+    //   nextEvent: {
+    //     type: "EXECUTING_COMMAND",
+    //     payload: { message: result.execute || "" },
+    //   },
+    // };
   }
 };
 

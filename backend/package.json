@@ -19,12 +19,15 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@genkit-ai/googleai": "^1.8.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "firebase-admin": "^13.3.0",
     "twilio": "^5.5.2",
     "websocket-express": "^3.1.2",
-    "ws": "^8.18.2"
+    "ws": "^8.18.2",
+    "genkit": "^1.8.0",
+    "genkitx-openai": "^0.22.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
