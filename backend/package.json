@@ -19,9 +19,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@genkit-ai/googleai": "^1.8.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "firebase-admin": "^13.3.0",
+    "genkit": "^1.8.0",
+    "genkitx-openai": "^0.22.3",
     "twilio": "^5.5.2"
   },
   "devDependencies": {

@@ -1,4 +1,6 @@
 import { SYSTEM_MESSAGES } from "../fsm/effects";
+import { getGeminiResponse } from "../llm/gemini";
+import { getChatGPTResponse } from "../llm/openai";
 import { Business } from "../models/business";
 import { ConvoHistory, FullStore } from "../models/store";
 import { getFirestoreDb } from "./config";
@@ -100,7 +102,7 @@ export const executeCommand = async (
   return { success: true, text: `command executed ${commandFn}` };
 };
 export const getResponseFromLLM = async (
-  convoHistory: string | ConvoHistory,
+  convoHistory:  ConvoHistory,
 ): Promise<{
   type: "text" | "fetch" | "execute";
   expectReply: boolean;
@@ -115,16 +117,21 @@ export const getResponseFromLLM = async (
       return {
         type: "text",
         expectReply: true,
-        text: "Sorry, I didn't hear anything. Can you hear me?",
+        text: "Sorry, I didn't hear anything. Can you hear me okay?",
       };
     } else if (lastMessage === SYSTEM_MESSAGES.noInputTwice) {
       return {
         type: "text",
         expectReply: false,
-        text: "Hey, I haven’t heard anything from you. Please call back when you're ready to continue.",
+        text: "I'm having trouble hearing you at the moment. Please call back when you're ready. Have a great day!",
       };
     }
   }
+
+  const result = process.env.LLM_PROVIDER === "gemini"? await getGeminiResponse(convoHistory)
+  : await getChatGPTResponse(convoHistory);
+  if (result) return result;
+  
 
   const demoMessage: string = Array.isArray(convoHistory)
     ? convoHistory[convoHistory.length - 1]?.customerToMachine || ""

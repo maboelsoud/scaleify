@@ -53,7 +53,6 @@ export interface TwilioVoiceWebhookParams {
 export interface singleTalk {
   customerToMachine?: string;
   machineToCustomer?: string;
-  machineToSystem?: string;
   systemToMachine?: string;
 }
 

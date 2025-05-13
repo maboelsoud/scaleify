@@ -17,18 +17,30 @@ function createGather({
       input: ["speech"],
       action: "/twilio/respond",
       method: "POST",
-      speechModel: "phone_call",
-      bargeIn: true,
+      speechModel: "deepgram_nova-3-general",
+      bargeIn: false,
       timeout: 5,
-      speechTimeout: "1",
+      speechTimeout: "1.5",
       actionOnEmptyResult: true,
     });
     if (message) {
-      gather.say({}, message);
+      gather.say({
+        // @ ts-expect-error this voice is in beta but it is actually available
+        // voice: "Polly.Joanna",
+        // voice: "Google.en-US-Chirp3-HD-Orus"
+        // voice: "Polly.Joanna-Neural"
+        // voice: "Google.en-US-Neural2-C"
+      }, message);
     }
   } else {
     if (message) {
-      twimlResp.say({}, message);
+      twimlResp.say({
+        // @ ts-expect-error this voice is in beta but it is actually available
+        // voice: "Polly.Joanna",
+        // voice: "Google.en-US-Chirp3-HD-Orus"
+        // voice: "Polly.Joanna-Neural"
+        // voice: "Google.en-US-Neural2-C"
+      }, message);
     }
     twimlResp.hangup();
   }
@@ -57,6 +69,7 @@ router.post("/start", async (req: Request, res: Response) => {
 });
 
 router.post("/respond", async (req: Request, res: Response) => {
+  console.log("🚀 ~ twilioRoutes.ts:80 ~ router.post ~ req.body.SpeechResult:", req.body.SpeechResult);
   await dispatch({
     event: { type: "RESPONDED", payload: { twilioParams: req.body } },
     emit: (event) => {
