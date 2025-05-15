@@ -3,8 +3,11 @@ import { config } from "dotenv";
 config(); // importing early so that other libraries can use env vars
 import twilio from "twilio";
 import twiliorouterRoutes from "./routes/twilioRoutes";
+import streamRelay from "./routes/streamRelay";
+import { WebSocketExpress } from "websocket-express";
 
-export const app = express();
+// export const app = express();
+export const app = new WebSocketExpress();
 const port = process.env.PORT || 3001;
 
 // Parse incoming POST params with Express middleware
@@ -16,6 +19,8 @@ app.get("/", (req, resp) => {
 });
 
 app.use("/twilio", twilio.webhook({ validate: false }), twiliorouterRoutes);
+// app.use("/streamRelay", twilio.webhook({ validate: false }), streamRelay);
+app.use("/streamRelay", streamRelay);
 
 app.get("/health", (req: Request, resp: Response) => {
   resp.send("Server is healthy");
