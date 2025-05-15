@@ -35,6 +35,23 @@ function createGather({
   return twimlResp;
 }
 
+function createConversationRelay(message:string): VoiceResponse  {
+  const ngrokUrl = process.env.NGROK_URL;
+  const url = new URL("/streamRelay/connect", ngrokUrl);
+  url.protocol = "wss";
+
+  const twimlResp = new VoiceResponse();
+  const connect = twimlResp.connect({
+  });
+
+  connect.conversationRelay({
+    welcomeGreeting: message,
+    url: url.toString(),
+  });
+
+  return twimlResp;
+}
+
 function dialOperator({
   operatorNumber,
 }: {
@@ -50,7 +67,8 @@ router.post("/start", async (req: Request, res: Response) => {
     event: { type: "CREATED", payload: { twilioParams: req.body } },
     emit: (event) => {
       if (event.type === "SENDING_RESPONSE" && event.payload) {
-        res.type("text/xml").send(createGather(event.payload).toString());
+        // res.type("text/xml").send(createGather(event.payload).toString());
+        res.type("text/xml").send(createConversationRelay(event.payload.message).toString());
       }
     },
   });

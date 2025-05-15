@@ -1,6 +1,7 @@
-import express, { json, Request, Response, urlencoded } from "express";
+import { json, Request, Response, urlencoded } from "express";
 import { config } from "dotenv";
 config(); // importing early so that other libraries can use env vars
+config({path: ".env.ngrok"}); // importing early so that other libraries can use env vars
 import twilio from "twilio";
 import twiliorouterRoutes from "./routes/twilioRoutes";
 import streamRelay from "./routes/streamRelay";

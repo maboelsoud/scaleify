@@ -1,8 +1,5 @@
-// import {WebSocketServer} from 'ws';
-// import { Router } from "express";
 import { Router } from "websocket-express";
 import { Request } from 'express';
-
 
 const router = new Router();
 
@@ -11,11 +8,17 @@ router.ws('/connect', async (req: Request, res)=> {
   console.log('accepted connection');
 
   ws.on('message', (msg)=> {
-    console.log('recieved message', msg);
-    ws.send(`recieved message ${msg}`)
+    const message = JSON.parse(msg.toString());
+    console.log("🚀 ~ streamRelay.ts:16 ~ ws.on ~ message:", message);
+    ws.send(
+      JSON.stringify({
+        type: "text",
+        token: "this is a test",
+        last: true,
+      })
+    );
   });
 
-  ws.send('hello');
 
 });
 
