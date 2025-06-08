@@ -11,6 +11,7 @@ export interface Business {
   name: string;
   businessInfo: Record<string, string>;
   admins: BusinessUser[];
+  googleRefreshToken?: string;
 }
 
 export function createBusiness(
@@ -26,6 +27,7 @@ export function createBusiness(
     name,
     businessInfo: {},
     admins: [],
+    googleRefreshToken: undefined,
   };
 }
 
