@@ -3,6 +3,7 @@ import { config } from "dotenv";
 config(); // importing early so that other libraries can use env vars
 import twilio from "twilio";
 import twiliorouterRoutes from "./routes/twilioRoutes";
+import vapiRoutes from "./routes/vapiRoutes"
 
 export const app = express();
 const port = process.env.PORT || 3001;
@@ -16,6 +17,7 @@ app.get("/", (req, resp) => {
 });
 
 app.use("/twilio", twilio.webhook({ validate: false }), twiliorouterRoutes);
+app.use("/vapi", vapiRoutes);
 
 app.get("/health", (req: Request, resp: Response) => {
   resp.send("Server is healthy");
