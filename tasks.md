@@ -38,6 +38,10 @@
   - [ ] `customers[]` by phone
   - [ ] `calls[]` metadata logger
 - [ ] `tools/bookAppointment.ts`: mock function handler
+- [ ] Express `clientRoutes` for Google Calendar:
+  - `/client/linkGoogle`
+  - `/client/check_availability`
+  - `/client/book_appointment`
 
 ---
 

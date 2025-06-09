@@ -35,6 +35,7 @@ const expectedBusiness = {
     testInfo: "testInfo",
   },
   admins: [],
+  googleRefreshToken: undefined,
 };
 
 const mockDb = createMockFirestore({

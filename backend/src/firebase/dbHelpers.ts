@@ -7,6 +7,7 @@ import { CollectionReference, DocumentData } from "firebase-admin/firestore";
 const COLLECTIONS = {
   store: "call",
   business: "business",
+  customer: "customer",
 } as const;
 
 function getStore(): CollectionReference<DocumentData> {
@@ -15,6 +16,10 @@ function getStore(): CollectionReference<DocumentData> {
 
 function getBusiness(): CollectionReference<DocumentData> {
   return getFirestoreDb().collection(COLLECTIONS.business);
+}
+
+function getCustomer(): CollectionReference<DocumentData> {
+  return getFirestoreDb().collection(COLLECTIONS.customer);
 }
 
 export const saveStoreToFirebase = async (
@@ -46,6 +51,28 @@ export const saveBusinessToFirebase = async (
     .set(business, { merge: true });
   console.log("set business at: ", res.writeTime);
   return business;
+};
+
+export const saveCustomerToFirebase = async (
+  customer: import("../models/customer").Customer,
+): Promise<import("../models/customer").Customer> => {
+  const res = await getCustomer()
+    .doc(customer.id)
+    .set(customer, { merge: true });
+  console.log("set customer at: ", res.writeTime);
+  return customer;
+};
+
+export const fetchCustomerFromFirebase = async (
+  id: string,
+): Promise<import("../models/customer").Customer | void> => {
+  const snapshot = await getCustomer().doc(id).get();
+  if (!snapshot.exists) {
+    console.log("No matching documents");
+    return;
+  }
+  const fetched = snapshot.data() as import("../models/customer").Customer;
+  return fetched;
 };
 
 // TODO: we might wanna remove this

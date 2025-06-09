@@ -109,6 +109,38 @@ Use the “Simulation” tab in the frontend to test your AI voice assistant:
 
 ---
 
+## Client API
+
+Endpoints for connecting a business to Google Calendar and scheduling appointments.
+
+### `GET /client/linkGoogle`
+
+- Query parameter `id` specifies the business.
+- When called without a `code` query parameter the route redirects to Google so the business owner can authorize access.
+- After authorization Google redirects back with `?code=...` and the endpoint stores the refresh token and responds with `{ success: true }`.
+
+### `POST /client/check_availability`
+
+- Query parameter `id` specifies the business.
+
+- **Body:**
+  - `start` – ISO start datetime
+  - `end` – ISO end datetime
+- Returns a list of open 30‑minute slots between `start` and `end` using the linked calendar.
+
+### `POST /client/book_appointment`
+
+- Query parameter `id` specifies the business.
+
+- **Body:**
+  - `start` – ISO start datetime
+  - `end` – ISO end datetime
+  - `customerId` – existing customer ID *(optional)*
+  - `fullName`, `email`, `phoneNumber` – details for a new customer
+  - `description` – notes to include on the event *(optional)*
+- Creates the calendar event and returns `{ success: true, eventId }`.
+
+
 ## 🧱 Future Roadmap
 - 🔄 Google Calendar Sync
 - 🥡 Toast API integration

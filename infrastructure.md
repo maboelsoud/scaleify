@@ -2,7 +2,8 @@ scaleify/
 ├── backend/ (Node.js + Express)
 │   ├── index.ts
 │   ├── routes/
-│   │   └── twilio.ts
+│   │   ├── twilio.ts
+│   │   └── clientRoutes.ts    # Google Calendar and booking endpoints
 │   ├── services/
 │   │   ├── stt.ts
 │   │   ├── tts.ts
