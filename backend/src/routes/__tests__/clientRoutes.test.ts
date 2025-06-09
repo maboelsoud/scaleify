@@ -30,18 +30,20 @@ jest.mock("googleapis", () => {
 });
 
 describe("Client routes", () => {
-  test("GET /client/:id/linkGoogle redirects", async () => {
+  test("GET /client/linkGoogle redirects", async () => {
     const mockDb = createMockFirestore({});
     jest
       .spyOn(firebaseService, "getFirestoreDb")
       .mockImplementation(() => mockDb as unknown as Firestore);
 
-    const res = await request(app).get("/client/test_business/linkGoogle");
+    const res = await request(app).get(
+      "/client/linkGoogle?id=test_business",
+    );
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain("https://");
   });
 
-  test("POST /client/:id/check_availability returns slots", async () => {
+  test("POST /client/check_availability returns slots", async () => {
     const mockDb = createMockFirestore({
       business: { test_business: { googleRefreshToken: "token" } },
     });
@@ -50,7 +52,7 @@ describe("Client routes", () => {
       .mockImplementation(() => mockDb as unknown as Firestore);
 
     const res = await request(app)
-      .post("/client/test_business/check_availability")
+      .post("/client/check_availability?id=test_business")
       .send({ start: "2024-01-01T00:00:00Z", end: "2024-01-01T01:00:00Z" });
 
     expect(res.status).toBe(200);
@@ -59,7 +61,7 @@ describe("Client routes", () => {
     ]);
   });
 
-  test("POST /client/:id/book_appointment creates event", async () => {
+  test("POST /client/book_appointment creates event", async () => {
     const mockDb = createMockFirestore({
       business: { test_business: { googleRefreshToken: "token", name: "Test", businessInfo: {} } },
     });
@@ -68,7 +70,7 @@ describe("Client routes", () => {
       .mockImplementation(() => mockDb as unknown as Firestore);
 
     const res = await request(app)
-      .post("/client/test_business/book_appointment")
+      .post("/client/book_appointment?id=test_business")
       .send({
         start: "2024-01-01T00:30:00Z",
         end: "2024-01-01T01:00:00Z",

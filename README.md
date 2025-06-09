@@ -113,19 +113,24 @@ Use the “Simulation” tab in the frontend to test your AI voice assistant:
 
 Endpoints for connecting a business to Google Calendar and scheduling appointments.
 
-### `GET /client/:id/linkGoogle`
+### `GET /client/linkGoogle`
 
+- Query parameter `id` specifies the business.
 - When called without a `code` query parameter the route redirects to Google so the business owner can authorize access.
 - After authorization Google redirects back with `?code=...` and the endpoint stores the refresh token and responds with `{ success: true }`.
 
-### `POST /client/:id/check_availability`
+### `POST /client/check_availability`
+
+- Query parameter `id` specifies the business.
 
 - **Body:**
   - `start` – ISO start datetime
   - `end` – ISO end datetime
 - Returns a list of open 30‑minute slots between `start` and `end` using the linked calendar.
 
-### `POST /client/:id/book_appointment`
+### `POST /client/book_appointment`
+
+- Query parameter `id` specifies the business.
 
 - **Body:**
   - `start` – ISO start datetime

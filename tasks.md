@@ -39,9 +39,9 @@
   - [ ] `calls[]` metadata logger
 - [ ] `tools/bookAppointment.ts`: mock function handler
 - [ ] Express `clientRoutes` for Google Calendar:
-  - `/client/:id/linkGoogle`
-  - `/client/:id/check_availability`
-  - `/client/:id/book_appointment`
+  - `/client/linkGoogle`
+  - `/client/check_availability`
+  - `/client/book_appointment`
 
 ---
 

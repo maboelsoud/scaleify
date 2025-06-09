@@ -20,9 +20,13 @@ function getOAuthClient(redirectUri: string) {
   );
 }
 
-router.get("/:id/linkGoogle", async (req: Request, res: Response) => {
-  const { id } = req.params;
+router.get("/linkGoogle", async (req: Request, res: Response) => {
+  const id = req.query.id as string | undefined;
   const code = req.query.code as string | undefined;
+  if (!id) {
+    res.status(400).json({ error: "missing id" });
+    return;
+  }
   let business: Business | void = await fetchBusinessFromFirebase(id);
   if (!business) {
     business = createBusiness(id, "", "", id);
@@ -30,14 +34,15 @@ router.get("/:id/linkGoogle", async (req: Request, res: Response) => {
   }
   const redirectUri =
     process.env.GOOGLE_REDIRECT_URI ||
-    `${req.protocol}://${req.get("host")}/client/${id}/linkGoogle`;
+    `${req.protocol}://${req.get("host")}/client/linkGoogle?id=${id}`;
   const oAuth2Client = getOAuthClient(redirectUri);
   if (!code) {
     const url = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: ["https://www.googleapis.com/auth/calendar"],
     });
-    return res.redirect(url);
+    res.redirect(url);
+    return;
   }
 
   const { tokens } = await oAuth2Client.getToken(code);
@@ -45,15 +50,21 @@ router.get("/:id/linkGoogle", async (req: Request, res: Response) => {
     (business as Business).googleRefreshToken = tokens.refresh_token;
     await saveBusinessToFirebase(business as Business);
   }
-  return res.json({ success: true });
+  res.json({ success: true });
+  return;
 });
 
-router.post("/:id/check_availability", async (req: Request, res: Response) => {
-  const { id } = req.params;
+router.post("/check_availability", async (req: Request, res: Response) => {
+  const id = req.query.id as string | undefined;
   const { start, end } = req.body as { start: string; end: string };
+  if (!id) {
+    res.status(400).json({ error: "missing id" });
+    return;
+  }
   const business = await fetchBusinessFromFirebase(id);
   if (!business || !business.googleRefreshToken) {
-    return res.status(404).json({ error: "business not linked" });
+    res.status(404).json({ error: "business not linked" });
+    return;
   }
   const oAuth2Client = getOAuthClient("postmessage");
   oAuth2Client.setCredentials({ refresh_token: business.googleRefreshToken });
@@ -80,11 +91,12 @@ router.post("/:id/check_availability", async (req: Request, res: Response) => {
     }
     pointer = next;
   }
-  return res.json(avail);
+  res.json(avail);
+  return;
 });
 
-router.post("/:id/book_appointment", async (req: Request, res: Response) => {
-  const { id } = req.params;
+router.post("/book_appointment", async (req: Request, res: Response) => {
+  const id = req.query.id as string | undefined;
   const {
     start,
     end,
@@ -102,14 +114,22 @@ router.post("/:id/book_appointment", async (req: Request, res: Response) => {
     phoneNumber?: string;
     description?: string;
   };
+  if (!id) {
+    res.status(400).json({ error: "missing id" });
+    return;
+  }
   const business = await fetchBusinessFromFirebase(id);
   if (!business || !business.googleRefreshToken) {
-    return res.status(404).json({ error: "business not linked" });
+    res.status(404).json({ error: "business not linked" });
+    return;
   }
   let customer: Customer | void;
   if (customerId) {
     customer = await fetchCustomerFromFirebase(customerId);
-    if (!customer) return res.status(404).json({ error: "customer not found" });
+    if (!customer) {
+      res.status(404).json({ error: "customer not found" });
+      return;
+    }
   } else {
     customer = {
       id: uuidv4(),
@@ -134,7 +154,8 @@ router.post("/:id/book_appointment", async (req: Request, res: Response) => {
       attendees: [{ email: (customer as Customer).email }],
     },
   });
-  return res.json({ success: true, eventId: event.data.id });
+  res.json({ success: true, eventId: event.data.id });
+  return;
 });
 
 export default router;
